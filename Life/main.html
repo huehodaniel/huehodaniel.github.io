@@ -1,0 +1,53 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Game Of Life</title>
+	<script type="text/javascript" src="game.js"></script>
+	<link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div id="gameField">
+		<canvas id="canvas" width="600" height="600"/>
+	</div>
+	<div id="instructions" style="text-align: center;">
+		<input id="genInterval" value="0"/>
+		<button id="update">Update</button>
+		<button id="next">Next</button>
+		<button id="stop">Stop</button>
+	</div>
+
+	<script>
+		var update = document.getElementById("update");
+		var next = document.getElementById("next");
+		var stop = document.getElementById("stop");
+		var interval = document.getElementById("genInterval");
+		var canvas = document.getElementById("canvas");
+		var game = new Life(canvas, {
+			width: 20,
+			height: 20
+		});
+
+		game.area.toggle(9, 10);
+		game.area.toggle(10, 10);
+		game.area.toggle(11, 10);
+
+		var timer = new LU.Timer(function() {
+			game.area.next();
+		}, 0);
+
+		update.addEventListener('click', function () {
+        	timer.interval = interval.value*1000;
+        	timer.restart();
+    	});
+
+    	next.addEventListener('click', function () {
+        	game.area.next();
+    	});
+
+    	stop.addEventListener('click', function() {
+    		timer.stop();
+    	});
+
+		var loop = game.start();
+	</script>
+</body>
