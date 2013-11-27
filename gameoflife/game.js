@@ -11,6 +11,15 @@ LU.assertRange = function assertRange(x, min, max) {
     if (x < min || x > max) throw new TypeError();
 };
 
+LU.repeat = function repeat(size, value) {
+    var array = new Array(size);
+    if(typeof value === "function") 
+        for (var i = 0; i < size; i++) array[i] = value();
+    else 
+        for (var i = 0; i < size; i++) array[i] = value;
+    return array;
+};
+
 LU.Timer = function Timer(func, params) {
     this.interval = params.interval || 1000;
     this.func = func;
@@ -34,13 +43,17 @@ LU.Timer = function Timer(func, params) {
     };
 }
 
-function Area(x, y, rule) {
+function Area(x, y, rule, wrap) {
     this.width = x;
     this.height = y;
-    this.rule = Area.getRule(this, rule);
+    this.size = x*y;
 
-    this.array = new Array(x * y);
-    for (var i = 0, len = this.array.length; i < len; i++) this.array[i] = LU.pair(false, false);
+    this.rule = Area.getRule(this, rule);
+    this.wrap = wrap !== undefined ? wrap : true;
+
+    this.array = LU.repeat(this.size, function() {
+        return LU.pair(false, false);
+    });
 }
 
 Area.empty = LU.pair(false, false);
@@ -77,7 +90,11 @@ Area.getRule = function GetRule(self, ruleName) {
 Area.prototype = {
     __neighbors: function (i) {
         return Area.neighborhood.map(function (e) {
-            return i + e.fst + this.width * e.snd;
+            var coord = i + e.fst + this.width * e.snd;
+            if(this.wrap) 
+                return coord < 0 ? this.size + coord : coord % this.size;
+            else
+                return coord < 0 ? -1 : coord;
         }, this);
     },
     check: function (x, y) {

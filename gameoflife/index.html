@@ -3,6 +3,7 @@
 	<meta charset="utf-8">
 	<title>Game Of Life</title>
 	<script type="text/javascript" src="game.js"></script>
+	<script type="text/javascript" src="chance.min.js"></script>
 	<link type="text/css" rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,45 +17,5 @@
 		<button id="stop">Stop</button>
 		<button id="clear">Clear</button>
 	</div>
-
-	<script>
-		var update = document.getElementById("update");
-		var next = document.getElementById("next");
-		var stop = document.getElementById("stop");
-		var clear = document.getElementById("clear");
-		var interval = document.getElementById("genInterval");
-		var canvas = document.getElementById("canvas");
-
-		var game = new Life(canvas, {
-			width: 20,
-			height: 20
-		});
-
-		game.area.toggle(9, 10);
-		game.area.toggle(10, 10);
-		game.area.toggle(11, 10);
-
-		var timer = new LU.Timer(function() {
-			game.area.next();
-		}, 0);
-
-		update.addEventListener('click', function () {
-        	timer.interval = interval.value*1000;
-        	timer.restart();
-    	});
-
-    	next.addEventListener('click', function () {
-        	game.area.next();
-    	});
-
-    	stop.addEventListener('click', function() {
-    		timer.stop();
-    	});
-
-    	clear.addEventListener('click', function() {
-    		game.area.clear();
-    	});
-
-		var loop = game.start();
-	</script>
+	<script type="text/javascript" src="play.js"></script>
 </body>
