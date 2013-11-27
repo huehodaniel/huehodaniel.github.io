@@ -7,15 +7,28 @@
 	<link type="text/css" rel="stylesheet" href="style.css">
 </head>
 <body>
-	<div id="gameField">
-		<canvas id="canvas" width="600" height="600"/>
+	<div id "game">
+		<div id="gameField">
+			<canvas id="canvas" width="600" height="600" data-game-ui/>
+		</div>
+		<div id="instructions" class="commands">
+			<input id="interval" value="0" data-game-ui/>
+			<button id="update" data-game-ui>Resume</button>
+			<button id="next" data-game-ui>Next</button>
+			<button id="stop" data-game-ui>Stop</button>
+			<button id="clear" data-game-ui>Clear</button>
+		</div>
+		<div id="reload" class="commands">
+			<input id="width" value="20" data-game-ui/>
+			<input id="height" value="20" data-game-ui/>
+			<select id="rules" data-game-ui>
+				<option value="traditional">Traditional</option>
+				<option value="couple">Couple</option>
+				<option value="virus">Virus</option>
+				<option value="watershed">Watershed</option>
+			</select>
+			<button id="reload" data-game-ui>Reload</button>
+		</div>
+		<script type="text/javascript" src="play.js"></script>
 	</div>
-	<div id="instructions" style="text-align: center;">
-		<input id="genInterval" value="0"/>
-		<button id="update">Update</button>
-		<button id="next">Next</button>
-		<button id="stop">Stop</button>
-		<button id="clear">Clear</button>
-	</div>
-	<script type="text/javascript" src="play.js"></script>
 </body>

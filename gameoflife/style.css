@@ -3,6 +3,10 @@
    text-align: center;
 }
 
+.commands {
+	text-align: center;
+}
+
 canvas {
    display: inline;
 }

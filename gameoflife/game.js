@@ -20,6 +20,15 @@ LU.repeat = function repeat(size, value) {
     return array;
 };
 
+LU.merge = function merge(obj1, obj2) {
+    var result = {};
+    for(var p1 in obj1) 
+        result[p1] = obj1[p1];
+    for(var p2 in obj2) 
+        result[p2] = obj2[p2];
+    return result;
+};
+
 LU.Timer = function Timer(func, params) {
     this.interval = params.interval || 1000;
     this.func = func;
@@ -41,7 +50,38 @@ LU.Timer = function Timer(func, params) {
         this.stop();
         this.start();
     };
-}
+};
+
+/** http://jquery-howto.blogspot.com.br/2009/09/get-url-parameters-values-with-jquery.html **/
+/** (shitty method) **/
+LU.getURLParams = function getURLParams()
+{
+    var queryStart = window.location.href.indexOf('?');
+    if(queryStart === -1) return {}
+
+    var vars = {}, hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+        hash = hashes[i].split('=');
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
+};
+
+LU.getURL = function getURL()
+{
+    var queryStart = window.location.href.indexOf('?');
+    return queryStart !== -1 ? window.location.href.slice(0, queryStart) : window.location.href;
+};
+
+LU.getAnnotatedDOMObjects = function getAnnotatedDOMObjects(annotation) {
+    var objs = {};
+    Array.prototype.forEach.call(document.querySelectorAll('[data-'+annotation+']'), function(e) {
+        objs[e.id] = e;
+    });
+    return objs;
+};
 
 function Area(x, y, rule, wrap) {
     this.width = x;
@@ -63,20 +103,36 @@ LU.pair(-1, 0), LU.pair(-1, -1), LU.pair(0, -1), LU.pair(1, -1)];
 
 Area.rules = {
     __helpers: {
-        trad: function(e, idx, self, low, high, born) {
-            var count = self.__neighbors(idx).reduce(function (pe, ce) {
+        counter: function(e, idx, self) {
+            return self.__neighbors(idx).reduce(function (pe, ce) {
                 var val = self.array[ce] || Area.empty;
                 return val.snd ? pe + 1 : pe;
             }, 0);
+        },
+        trad: function(e, idx, self, low, high, born) {
+            var count = Area.rules.__helpers.counter(e, idx, self);
             if (count < low || count > high) e.fst = false;
             else if (count === born) e.fst = true;
-        }
+        },
+        virus: function(e, idx, self, min, max) {
+            var count = Area.rules.__helpers.counter(e, idx, self);
+            if(count > min) e.fst = true;
+            if(count > max) e.fst = false;
+        },
     },
     traditional: function TraditionalLife(e, idx, self) {
         Area.rules.__helpers.trad(e, idx, self, 2, 3, 3);
     },
     couple: function CoupleLife(e, idx, self) {
         Area.rules.__helpers.trad(e, idx, self, 2, 3, 2);
+    },
+    virus: function VirusMode(e, idx, self) {
+        Area.rules.__helpers.virus(e, idx, self, 0, 4);
+    },
+    watershed: function CannibalMode(e, idx, self) {
+        var rain = chance.bool({likelihood: 25});
+        if(rain) self.array[i].fst = rain;
+        else Area.rules.__helpers.virus(e, idx, self, 2, 7);
     }
 };
 
@@ -170,6 +226,7 @@ DU.enableClickEvent = function enableClickEvent(area, canvas) {
     });
 };
 
+/** http://stackoverflow.com/questions/55677/how-do-i-get-the-coordinates-of-a-mouse-click-on-a-canvas-element **/
 HTMLCanvasElement.prototype.relMouseCoords = function relMouseCoords(event) {
     var totalOffsetX = 0;
     var totalOffsetY = 0;
@@ -211,4 +268,4 @@ function Life(canvas, params) {
             return setInterval(self.drawer, drawInterval || 75);
         }
     };    
-};
+}

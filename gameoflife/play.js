@@ -1,14 +1,17 @@
 (function() {
-	var update = document.getElementById("update");
-	var next = document.getElementById("next");
-	var stop = document.getElementById("stop");
-	var clear = document.getElementById("clear");
-
-	var interval = document.getElementById("genInterval");
-	var canvas = document.getElementById("canvas");
-	var game = new Life(canvas, {
+	var UI = LU.getAnnotatedDOMObjects("game-ui");
+	var params = LU.merge({
 		width: 20,
-		height: 20
+		height: 20,
+		rules: "traditional",
+		interval: 0
+	}, LU.getURLParams());
+
+	var game = new Life(UI.canvas, {
+		width: params.width,
+		height: params.height,
+		rule: params.rules,
+		interval: params.interval
 	});
 
 	var rndParams = {
@@ -32,22 +35,55 @@
 		game.area.next();
 	}, 0);
 
-	update.addEventListener('click', function () {
-		timer.interval = interval.value*1000;
-		timer.restart();
+	UI.update.addEventListener('click', function () {
+		timer.interval = params.interval*1000;
+		if(timer.interval !== 0) {
+			timer.restart();
+			UI.update.innerHTML = "Update";
+		} else {
+			UI.update.innerHTML = "Resume";
+		}
 	});
 
-	next.addEventListener('click', function () {
+	UI.next.addEventListener('click', function () {
 		game.area.next();
 	});
 
-	stop.addEventListener('click', function() {
+	UI.stop.addEventListener('click', function() {
 		timer.stop();
+		UI.update.innerHTML = "Resume";
 	});
 
-	clear.addEventListener('click', function() {
+	UI.clear.addEventListener('click', function() {
 		game.area.clear();
 	});
 
-	var loop = game.start();
+	function setEventValueGetter(paramList, dom) {
+		paramList.forEach(function(param) {
+			dom[param].addEventListener('change', function() {
+				params[param] = dom[param].value;
+			});
+		});
+	}
+
+	setEventValueGetter('width,height,rules,interval'.split(','), UI);
+
+	UI.reload.addEventListener('click', function() {
+		var urlParams = [];
+		for(var p in params) {
+			urlParams.push(p + '=' + params[p]);
+		}
+		window.location.replace(LU.getURL() + '?' + urlParams.join('&'));
+	});
+
+	function modifyIfDef(obj, value) {
+		if(value) obj.value = value;
+	}
+	
+	modifyIfDef(UI.width, params.width);
+	modifyIfDef(UI.height, params.height);
+	modifyIfDef(UI.rules, params.rules);
+	modifyIfDef(UI.interval, params.interval);
+
+	game.start(50);
 })();
