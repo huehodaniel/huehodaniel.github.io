@@ -48,15 +48,22 @@ Area.empty = LU.pair(false, false);
 Area.neighborhood = [LU.pair(1, 0), LU.pair(1, 1), LU.pair(0, 1), LU.pair(-1, 1),
 LU.pair(-1, 0), LU.pair(-1, -1), LU.pair(0, -1), LU.pair(1, -1)];
 
-
 Area.rules = {
+    __helpers: {
+        trad: function(e, idx, self, low, high, born) {
+            var count = self.__neighbors(idx).reduce(function (pe, ce) {
+                var val = self.array[ce] || Area.empty;
+                return val.snd ? pe + 1 : pe;
+            }, 0);
+            if (count < low || count > high) e.fst = false;
+            else if (count === born) e.fst = true;
+        }
+    },
     traditional: function TraditionalLife(e, idx, self) {
-        var count = self.__neighbors(idx).reduce(function (pe, ce) {
-            var val = self.array[ce] || Area.empty;
-            return val.snd ? pe + 1 : pe;
-        }, 0);
-        if (count < 2 || count > 3) e.fst = false;
-        else if (count === 3) e.fst = true;
+        Area.rules.__helpers.trad(e, idx, self, 2, 3, 3);
+    },
+    couple: function CoupleLife(e, idx, self) {
+        Area.rules.__helpers.trad(e, idx, self, 2, 3, 2);
     }
 };
 
@@ -95,6 +102,11 @@ Area.prototype = {
             e.snd = e.fst;
         });
         self.array.forEach(self.rule);
+    },
+    clear: function() {
+        this.array.forEach(function (e) {
+            e.fst = false;
+        });
     }
 };
 

@@ -14,14 +14,17 @@
 		<button id="update">Update</button>
 		<button id="next">Next</button>
 		<button id="stop">Stop</button>
+		<button id="clear">Clear</button>
 	</div>
 
 	<script>
 		var update = document.getElementById("update");
 		var next = document.getElementById("next");
 		var stop = document.getElementById("stop");
+		var clear = document.getElementById("clear");
 		var interval = document.getElementById("genInterval");
 		var canvas = document.getElementById("canvas");
+
 		var game = new Life(canvas, {
 			width: 20,
 			height: 20
@@ -46,6 +49,10 @@
 
     	stop.addEventListener('click', function() {
     		timer.stop();
+    	});
+
+    	clear.addEventListener('click', function() {
+    		game.area.clear();
     	});
 
 		var loop = game.start();
