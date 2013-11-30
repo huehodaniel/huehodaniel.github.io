@@ -1,88 +1,3 @@
-var LU = {};
-
-LU.pair = function pair(x, y) {
-    return {
-        fst: x,
-        snd: y
-    };
-};
-
-LU.assertRange = function assertRange(x, min, max) {
-    if (x < min || x > max) throw new TypeError();
-};
-
-LU.repeat = function repeat(size, value) {
-    var array = new Array(size);
-    if(typeof value === "function") 
-        for (var i = 0; i < size; i++) array[i] = value();
-    else 
-        for (var i = 0; i < size; i++) array[i] = value;
-    return array;
-};
-
-LU.merge = function merge(obj1, obj2) {
-    var result = {};
-    for(var p1 in obj1) 
-        result[p1] = obj1[p1];
-    for(var p2 in obj2) 
-        result[p2] = obj2[p2];
-    return result;
-};
-
-LU.Timer = function Timer(func, params) {
-    this.interval = params.interval || 1000;
-    this.func = func;
-
-    var timerId = 0;
-
-    this.stop = function() {
-        clearInterval(timerId);
-        timerId = 0;
-    };
-
-    this.start = function() {
-        if(!timerId && this.interval !== 0) {
-            timerId = setInterval(this.func, this.interval);
-        }
-    };
-
-    this.restart = function() {
-        this.stop();
-        this.start();
-    };
-};
-
-/** http://jquery-howto.blogspot.com.br/2009/09/get-url-parameters-values-with-jquery.html **/
-/** (shitty method) **/
-LU.getURLParams = function getURLParams()
-{
-    var queryStart = window.location.href.indexOf('?');
-    if(queryStart === -1) return {}
-
-    var vars = {}, hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for(var i = 0; i < hashes.length; i++)
-    {
-        hash = hashes[i].split('=');
-        vars[hash[0]] = hash[1];
-    }
-    return vars;
-};
-
-LU.getURL = function getURL()
-{
-    var queryStart = window.location.href.indexOf('?');
-    return queryStart !== -1 ? window.location.href.slice(0, queryStart) : window.location.href;
-};
-
-LU.getAnnotatedDOMObjects = function getAnnotatedDOMObjects(annotation) {
-    var objs = {};
-    Array.prototype.forEach.call(document.querySelectorAll('[data-'+annotation+']'), function(e) {
-        objs[e.id] = e;
-    });
-    return objs;
-};
-
 function Area(x, y, rule, wrap) {
     this.width = x;
     this.height = y;
@@ -131,7 +46,7 @@ Area.rules = {
     },
     watershed: function CannibalMode(e, idx, self) {
         var rain = chance.bool({likelihood: 25});
-        if(rain) self.array[i].fst = rain;
+        if(rain) self.array[idx].fst = rain;
         else Area.rules.__helpers.virus(e, idx, self, 2, 7);
     }
 };
@@ -224,29 +139,6 @@ DU.enableClickEvent = function enableClickEvent(area, canvas) {
         var pos = DU.getCoord(canvas.relMouseCoords(event), size) 
         area.toggle(pos.x, pos.y);
     });
-};
-
-/** http://stackoverflow.com/questions/55677/how-do-i-get-the-coordinates-of-a-mouse-click-on-a-canvas-element **/
-HTMLCanvasElement.prototype.relMouseCoords = function relMouseCoords(event) {
-    var totalOffsetX = 0;
-    var totalOffsetY = 0;
-    var canvasX = 0;
-    var canvasY = 0;
-    var currentElement = this;
-
-    do {
-        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
-        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-    }
-    while (currentElement = currentElement.offsetParent);
-
-    canvasX = event.pageX - totalOffsetX;
-    canvasY = event.pageY - totalOffsetY;
-
-    return {
-        x: canvasX,
-        y: canvasY
-    };
 };
 
 function Life(canvas, params) {
