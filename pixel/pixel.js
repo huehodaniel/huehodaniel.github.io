@@ -19,7 +19,8 @@ function Pixel(canvas, parameters) {
         y: (canvas.height / params.height) | 0,
     };
 
-    var modified = [];
+    var modified = {};
+    var filled = false;
 
     var mapToCanvas = function mapToCanvas(i) {
         return {
@@ -35,7 +36,7 @@ function Pixel(canvas, parameters) {
     this.set = function setPixel(x, y, value) {
         var pos = mapToPixel(x, y);
         if(array[pos] !== value) {
-            modified.push(pos);
+            modified[pos] = true;
             array[pos] = value;
         }
     };
@@ -45,20 +46,27 @@ function Pixel(canvas, parameters) {
     };
 
     this.fill = function fillCanvas(value) {
+        filled = true;
         for(var i = 0; i < arraySize; i++) {
-            modified.push(i);
             array[i] = value;
         }
     };
 
+    var drawHelper = function(idx) {
+        var mapping = mapToCanvas(idx);
+        ctx.fillStyle = array[idx];
+        ctx.fillRect(mapping.x, mapping.y, sizes.x, sizes.y);
+    };
+
     this.draw = function drawCanvas() {
-        var modLen = modified.length;
-        for(var idx = 0; idx < modLen; idx++) {
-            var modIdx = modified[idx], mapping = mapToCanvas(modIdx);
-            ctx.fillStyle = array[modIdx];
-            ctx.fillRect(mapping.x, mapping.y, sizes.x, sizes.y);
+        if(filled) {
+            for(var idx = 0; idx < arraySize; idx++) drawHelper(idx);
+        } else {
+            for(var idx in modified) drawHelper(idx);
         }
-        modified.length = 0;
+
+        filled = false;
+        modified = {};
     };
 
     this.export = function exportCanvas(name) {
@@ -81,16 +89,50 @@ function Pixel(canvas, parameters) {
         });
     };
 
+    this.info = function Info() {
+        return {
+            sizes: sizes,
+            canvas: canvas
+        };
+    }
+
     this.fill(params.color);
+}
+
+function PixelEditor(pixelObj, colorPickerObj) {
+    var pixelData = pixelObj.info();
+
+    var getCoord = function getCoord(absPos, cellSize) {
+        return {
+            x: (absPos.x / cellSize.x) | 0,
+            y: (absPos.y / cellSize.y) | 0
+        };
+    };
+
+    var canvas = pixelData.canvas;
+    var selectedColor = "#000000";
+
+    canvas.addEventListener('click', function (event) {
+        var pos = getCoord(canvas.relMouseCoords(event), pixelData.sizes) 
+        pixelObj.set(pos.x, pos.y, selectedColor);
+    });
+
+    var validate = /^#[A-Fa-f0-9]{6}$/
+    colorPickerObj.addEventListener('change', function () {
+        if(validate.test(colorPickerObj.value))
+            selectedColor = colorPickerObj.value;
+    });
 }
 
 (function() {
     var elems = LU.getAnnotatedDOMObjects('game-ui');
-    var w = 160, h = 120, scr = new Pixel(elems.canvas, {
+    var w = 40, h = 30, scr = new Pixel(elems.canvas, {
         width: w,
         height: h
     });
-    
+
+    var editor = new PixelEditor(scr, elems.color);
+
     var rand = function(min, max) {
         return chance.natural({min: min, max: max - 1});
     };
@@ -101,9 +143,23 @@ function Pixel(canvas, parameters) {
     };
 
     var rep = 20;
-    setInterval(function() {
+
+    var timer = new LU.Timer(function() {
         for(var i = 0; i < rep; i++) dot();
     }, 25);
+
+    var rainbowing = false;
+    elems.rainbow.addEventListener('click', function () {
+        if(rainbowing){
+            timer.stop()
+            rainbowing = false;
+            elems.rainbow.innerHTML = "Rainbow"
+        } else {
+            timer.start();
+            rainbowing = true;
+            elems.rainbow.innerHTML = "Stop Rainbow"
+        }
+    });
 
     setInterval(function() {
         scr.draw();
