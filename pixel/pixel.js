@@ -22,19 +22,28 @@ function Pixel(canvas, parameters) {
     var modified = {};
     var filled = false;
 
-    var mapToCanvas = function mapToCanvas(i) {
+    var mapToArray = function mapToArray(x, y) {
+        return x + params.width * y;
+    };
+
+    var mapToField = function mapToField(i) {
         return {
-            x: sizes.x * (i % params.height), 
-            y: sizes.y * ((i / params.height) | 0)
+            x: i % params.width,
+            y: (i / params.width) | 0
+        }
+    };
+
+    var mapToCanvas = function mapToCanvas(i) {
+        var toField = mapToField(i);
+        return {
+            x: toField.x * sizes.x,
+            y: toField.y * sizes.y
         };
     };
 
-    var mapToPixel = function mapToPixel(x, y) {
-        return x + params.width*y;
-    };
 
     this.set = function setPixel(x, y, value) {
-        var pos = mapToPixel(x, y);
+        var pos = mapToArray(x, y);
         if(array[pos] !== value) {
             modified[pos] = true;
             array[pos] = value;
@@ -42,7 +51,7 @@ function Pixel(canvas, parameters) {
     };
 
     this.get = function getPixel(x, y) {
-        return array[mapToPixel(x, y)];
+        return array[mapToArray(x, y)];
     };
 
     this.fill = function fillCanvas(value) {
@@ -52,17 +61,20 @@ function Pixel(canvas, parameters) {
         }
     };
 
-    var drawHelper = function(idx) {
-        var mapping = mapToCanvas(idx);
-        ctx.fillStyle = array[idx];
-        ctx.fillRect(mapping.x, mapping.y, sizes.x, sizes.y);
-    };
-
     this.draw = function drawCanvas() {
         if(filled) {
-            for(var idx = 0; idx < arraySize; idx++) drawHelper(idx);
+            for(var idx = 0; idx < arraySize; idx++) {
+                var mapping = mapToCanvas(idx);
+                ctx.fillStyle = array[idx];
+                ctx.fillRect(mapping.x, mapping.y, sizes.x, sizes.y);
+            }
         } else {
-            for(var idx in modified) drawHelper(idx);
+            var values = Object.keys(modified), len = values.length;
+            for(var idx = 0; idx < len; idx++) {
+                var mapping = mapToCanvas(values[idx]);
+                ctx.fillStyle = array[values[idx]];
+                ctx.fillRect(mapping.x, mapping.y, sizes.x, sizes.y);
+            }
         }
 
         filled = false;
@@ -113,15 +125,17 @@ function PixelEditor(pixelObj, colorPickerObj) {
     var selectedColor = "#000000";
 
     canvas.addEventListener('click', function (event) {
-        var pos = getCoord(canvas.relMouseCoords(event), pixelData.sizes) 
+        var pos = getCoord(canvas.relMouseCoords(event), pixelData.sizes);
         pixelObj.set(pos.x, pos.y, selectedColor);
     });
 
     var validate = /^#[A-Fa-f0-9]{6}$/
-    colorPickerObj.addEventListener('change', function () {
-        if(validate.test(colorPickerObj.value))
-            selectedColor = colorPickerObj.value;
-    });
+    
+    this.setColor = function() {
+        if(validate.test(colorPicker.value)) {
+            selectedColor = colorPicker.value;
+        }
+    };
 }
 
 (function() {
@@ -131,7 +145,7 @@ function PixelEditor(pixelObj, colorPickerObj) {
         height: h
     });
 
-    var editor = new PixelEditor(scr, elems.color);
+    var editor = new PixelEditor(scr, elems.colorPicker);
 
     var rand = function(min, max) {
         return chance.natural({min: min, max: max - 1});
@@ -139,30 +153,48 @@ function PixelEditor(pixelObj, colorPickerObj) {
 
     var dot = function() {
         var rX = rand(0, w), rY = rand(0, h), rC = '#' + rand(0, 1 << 24).toString(16).paddingLeft('000000');
-        scr.set(rX, rY, rC);
+        return {
+            x: rX,
+            y: rY,
+            c: rC
+        };
     };
 
-    var rep = 20;
+    var dotter = function() {
+        var randDot = dot();
+        scr.set(randDot.x, randDot.y, randDot.c);
+    };
 
-    var timer = new LU.Timer(function() {
-        for(var i = 0; i < rep; i++) dot();
-    }, 25);
+    var repeater = function(func, times) {
+        return function() {
+            var t = times;
+            while(t-- > 0) func();
+        }
+    };
+
+    var timer = new LU.ChainTimer(50);
 
     var rainbowing = false;
     elems.rainbow.addEventListener('click', function () {
         if(rainbowing){
-            timer.stop()
+            timer.remove("rainbow");
             rainbowing = false;
             elems.rainbow.innerHTML = "Rainbow"
         } else {
-            timer.start();
+            timer.push("rainbow", repeater(dotter, 5));
             rainbowing = true;
             elems.rainbow.innerHTML = "Stop Rainbow"
         }
     });
 
-    setInterval(function() {
+    elems.colorSet.addEventListener('click', function () {
+        editor.setColor();
+    });
+
+    timer.push("draw", function() {
         scr.draw();
-    }, 10);
+    });
+
+    timer.start();
 
 })();

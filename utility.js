@@ -1,3 +1,46 @@
+// Prototypes
+
+/** http://dev.enekoalonso.com/2010/07/20/little-tricks-string-padding-in-javascript/
+    http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng **/
+String.prototype.paddingLeft = function (paddingValue) {
+   return String(paddingValue + this).slice(-paddingValue.length);
+};
+
+/** http://stackoverflow.com/questions/55677/how-do-i-get-the-coordinates-of-a-mouse-click-on-a-canvas-element **/
+HTMLCanvasElement.prototype.relMouseCoords = function relMouseCoords(event) {
+    var totalOffsetX = 0;
+    var totalOffsetY = 0;
+    var canvasX = 0;
+    var canvasY = 0;
+    var currentElement = this;
+
+    do {
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+    }
+    while (currentElement = currentElement.offsetParent);
+
+    canvasX = event.pageX - totalOffsetX;
+    canvasY = event.pageY - totalOffsetY;
+
+    return {
+        x: canvasX,
+        y: canvasY
+    };
+};
+
+/** http://stackoverflow.com/questions/5767325/remove-specific-element-from-an-array **/
+Array.prototype.remove = function(element) {
+    var count = 0, index;
+
+    while((index = this.indexOf(element)) > -1) {
+       this.splice(index, 1);
+       count++;
+    }
+    
+    return count;
+};
+
 var LU = {};
 
 LU.pair = function pair(x, y) {
@@ -52,6 +95,51 @@ LU.Timer = function Timer(func, params) {
     };
 };
 
+LU.ChainTimer = function Timer(interval) {
+    this.interval = interval || 1000;
+
+    var actions = {}, actionNames = [], stop = true;
+
+    var executer = function executer() {
+        if(stop) return;
+
+        for(var i = 0, len = actionNames.length; i < len; i++) {
+            actions[actionNames[i]]();
+        }
+
+        setTimeout(executer, this.interval);
+    };
+
+    this.stop = function() {
+        stop = true;
+    };
+
+    this.start = function() {
+        if(stop) {
+            stop = false;
+            executer();
+        }
+    };
+
+    this.push = function(name, func) {
+        actions[name] = func;
+        actionNames.remove(name);
+        actionNames.push(name);
+    };
+
+    this.update = function(name, func) {
+        actions[name] = func;
+        if(actionNames.indexOf(name) < 0) {
+            actionNames.push(name);
+        }
+    };
+
+    this.remove = function(name) {
+        delete actions[name];
+        actionNames.remove(name);
+    };
+};
+
 /** http://jquery-howto.blogspot.com.br/2009/09/get-url-parameters-values-with-jquery.html **/
 /** (shitty method) **/
 LU.getURLParams = function getURLParams()
@@ -95,13 +183,7 @@ LU.colorCodify = function colorCodify(cssColorCode) {
     var actualCode = cssColorCode.slice(1);
     if(actualCode.length != 6) throw new TypeError("Invalid color code");
 
-    var result = 0;
-    LU.chunkify(actualCode, 3).forEach(function(e, idx) {
-        var intVal = parseInt(e, 16);
-        result |= intVal << 8*idx;
-    });
-
-    return result;
+    return parseInt(actualCode, 16);
 };
 
 LU.RGBMask = {
@@ -111,44 +193,9 @@ LU.RGBMask = {
 };
 
 LU.colorDecode = function colorDecode(encodedColor) {
-    var decoded = "";
-    for(var S in LU.RGBMask) {
-        var colorData = LU.RGBMask[S];
-        var strVal = (result & colorData.mask) >> colorData.shift;
-        decoded += strVal.toString(16);
-    }
-    return decoded;
+    return "#" + encodedColor.toString(16);
 };
 
 LU.$ = function getElement(id) {
     document.getElementById(id);
-};
-
-/** http://dev.enekoalonso.com/2010/07/20/little-tricks-string-padding-in-javascript/
-    http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng **/
-String.prototype.paddingLeft = function (paddingValue) {
-   return String(paddingValue + this).slice(-paddingValue.length);
-};
-
-/** http://stackoverflow.com/questions/55677/how-do-i-get-the-coordinates-of-a-mouse-click-on-a-canvas-element **/
-HTMLCanvasElement.prototype.relMouseCoords = function relMouseCoords(event) {
-    var totalOffsetX = 0;
-    var totalOffsetY = 0;
-    var canvasX = 0;
-    var canvasY = 0;
-    var currentElement = this;
-
-    do {
-        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
-        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-    }
-    while (currentElement = currentElement.offsetParent);
-
-    canvasX = event.pageX - totalOffsetX;
-    canvasY = event.pageY - totalOffsetY;
-
-    return {
-        x: canvasX,
-        y: canvasY
-    };
 };
