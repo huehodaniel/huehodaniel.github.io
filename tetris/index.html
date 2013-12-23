@@ -1,21 +1,16 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Pixel</title>
+	<title>Tetris</title>
 	<link type="text/css" rel="stylesheet" href="style.css">
 	<script type="text/javascript" src="../utility.js"></script>
 	<script type="text/javascript" src="../chance.min.js"></script>
-	<script type="text/javascript" src="pixel.js"></script>
+	<script type="text/javascript" src="../pixel/pixel.js"></script>
 </head>
 <body>
 	<div id="game">
 		<div id="gameField">
-			<canvas id="canvas" width="640" height="480" data-game-ui/>
-		</div>
-		<div id="ctrl" class="commands">
-			<input id="colorPicker" data-game-ui/>
-			<button id="colorSet" data-game-ui>Set Color</button>
-			<button id="rainbow" data-game-ui>Rainbow</button>
+			<canvas id="canvas" width="480" height="360" data-game-ui/>
 		</div>
 		<script type="text/javascript" src="play.js"></script>
 	</div>
