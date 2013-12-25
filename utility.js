@@ -1,8 +1,20 @@
-// Prototypes
+// Prototypes e statics
+
+Number.compare = function compare(a, b) {
+    if(a < b) return -1;
+    else if(a > b) return 1;
+    else return 0;
+};
+
+Array.prototype.swap = function(fst, snd) {
+    var tmp = this[fst];
+    this[fst] = this[snd];
+    this[snd] = tmp;
+};
 
 /** http://dev.enekoalonso.com/2010/07/20/little-tricks-string-padding-in-javascript/
     http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng **/
-String.prototype.paddingLeft = function (paddingValue) {
+String.prototype.paddingLeft = function(paddingValue) {
    return String(paddingValue + this).slice(-paddingValue.length);
 };
 
@@ -63,6 +75,12 @@ LU.repeat = function repeat(size, value) {
     return array;
 };
 
+LU.inverse = function inverse(func) {
+    return function(args) {
+        return !(func(args));
+    }
+};
+
 LU.merge = function merge(obj1, obj2) {
     var result = {};
     for(var p1 in obj1) 
@@ -70,6 +88,10 @@ LU.merge = function merge(obj1, obj2) {
     for(var p2 in obj2) 
         result[p2] = obj2[p2];
     return result;
+};
+
+LU.identity = function identity(arg) {
+    return arg;
 };
 
 LU.Timer = function Timer(func, params) {

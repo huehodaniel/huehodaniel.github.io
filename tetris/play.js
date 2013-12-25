@@ -1,9 +1,20 @@
 function GameField() {
     var points = 0;
 
-    var array = LU.repeat(20, function() {
+    var clearLine = function() {
         return LU.repeat(10, false);
-    });
+    };
+
+    var array = LU.repeat(20, clearLine);
+
+    var pushUp = function(i) {
+        var idx = i, lineIdx = idx - 1;
+        while(array[lineIdx].every(LU.identity)) {
+            array.swap(i, lineIdx);
+            i++;
+            lineIdx++;
+        }
+    };
 
     this.mark = function(x, y) {
         array[y][x] = true;
@@ -17,13 +28,16 @@ function GameField() {
         array[y][x] = v;
     };
 
-    this.check = function() {
-        var check = array.filter(function(e) {
-            return e.every(function(j) {
-                return j;
-            });
+    this.update = function() {
+        var check = array.reduce(function(pe, ce, i) {
+            if (ce.every(LU.identity)) pe.push(i);
+            return pe;
+        }, []).sort(LU.inverse(Number.compare));
+        
+        check.forEach(function(e) {
+            pushUp(e);
         });
-    }
+    };
 }
 
 function Block(pixels, field) {
