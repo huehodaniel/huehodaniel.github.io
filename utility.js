@@ -1,5 +1,4 @@
-// Prototypes e statics
-
+// Prototypes and statics
 Number.compare = function compare(a, b) {
     if(a < b) return -1;
     else if(a > b) return 1;
@@ -78,6 +77,17 @@ LU.repeat = function repeat(size, value) {
 LU.inverse = function inverse(func) {
     return function(args) {
         return !(func(args));
+    }
+};
+
+LU.CountDown = function CountDown(init) {
+    var countValue = init, resetValue = init;
+
+    return function() {
+        if(--countValue > 0) return false;
+
+        countValue = resetValue;
+        return true;
     }
 };
 
