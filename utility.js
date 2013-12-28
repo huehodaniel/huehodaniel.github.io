@@ -197,5 +197,23 @@ LU.colorDecode = function colorDecode(encodedColor) {
 };
 
 LU.$ = function getElement(id) {
-    document.getElementById(id);
+    return document.getElementById(id);
+};
+
+LU.tail = function tail(obj) {
+    return Array.prototype.slice.apply(arr, [1]);
+};
+
+LU.map = function map(obj, func, thisArg) {
+    return Array.prototype.map.apply(obj, [func, thisArg]);
+};
+
+LU.trampoline = function trampoline(fun) {
+  var result = fun.apply(fun, LU.tail(arguments));
+
+  while (typeof result === "function") {
+    result = result();
+  }
+
+  return result;
 };
