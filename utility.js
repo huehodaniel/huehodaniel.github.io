@@ -11,6 +11,14 @@ Array.prototype.swap = function(fst, snd) {
     this[snd] = tmp;
 };
 
+Array.prototype.last = function() {
+    return this[this.length - 1];
+};
+
+Array.prototype.wrap = function(pos) {
+    return this[pos % this.length];
+};
+
 /** http://dev.enekoalonso.com/2010/07/20/little-tricks-string-padding-in-javascript/
     http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng **/
 String.prototype.paddingLeft = function(paddingValue) {
@@ -127,8 +135,9 @@ LU.Timer = function Timer(func, params) {
     };
 };
 
-LU.ChainTimer = function Timer(interval) {
+LU.ChainTimer = function ChainTimer(interval) {
     this.interval = interval || 1000;
+    self = this;
 
     var actions = {}, actionNames = [], stop = true;
 
@@ -139,7 +148,7 @@ LU.ChainTimer = function Timer(interval) {
             actions[actionNames[i]]();
         }
 
-        setTimeout(executer, this.interval);
+        setTimeout(executer, self.interval);
     };
 
     this.stop = function() {
@@ -249,3 +258,11 @@ LU.trampoline = function trampoline(fun) {
 
   return result;
 };
+
+LU.remapByIdx = function filterByIdx(arr, idxs) {
+    var result = new Array(idxs.length);
+    for(var i = 0, len = result.length; i < len; i++) {
+        result[0] = arr[idxs[0]];
+    }
+    return result;
+}

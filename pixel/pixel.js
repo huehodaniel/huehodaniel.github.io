@@ -9,7 +9,8 @@ function Pixel(canvas, parameters) {
         height: 240,
         canvasX: 0,
         canvasY: 0,
-        color: '#000000'
+        color: '#000000',
+        style: 'fillRect'
     }, parameters);
 
     var arraySize = params.width * params.height;
@@ -66,14 +67,14 @@ function Pixel(canvas, parameters) {
             for(var idx = 0; idx < arraySize; idx++) {
                 var mapping = mapToCanvas(idx);
                 ctx.fillStyle = array[idx];
-                ctx.fillRect(mapping.x, mapping.y, sizes.x, sizes.y);
+                ctx[params.style](mapping.x, mapping.y, sizes.x, sizes.y);
             }
         } else {
             var values = Object.keys(modified), len = values.length;
             for(var idx = 0; idx < len; idx++) {
                 var mapping = mapToCanvas(values[idx]);
                 ctx.fillStyle = array[values[idx]];
-                ctx.fillRect(mapping.x, mapping.y, sizes.x, sizes.y);
+                ctx[params.style](mapping.x, mapping.y, sizes.x, sizes.y);
             }
         }
 
